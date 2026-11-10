@@ -388,6 +388,7 @@ phase05_identifier_generation/
 ├── embedded-id/
 ├── id-class/
 └── composite-key/
+Identifier Generation & Composite Keys	Assigned, Identity, Sequence, Table, UUID, @EmbeddedId, @IdClass
 
 
 PR-06: Entity Relationships
