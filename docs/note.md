@@ -620,3 +620,176 @@ Ad options
 
 
 Learn more
+
+Category 1: Architecture, Core Concepts & Entity Lifecycle (Q1 – Q20)
+1. What is Hibernate and how does it relate to JPA?
+   Hibernate is an Object-Relational Mapping (ORM) framework for Java that simplifies database interactions by mapping Java classes to database tables.
+
+JPA (Jakarta Persistence API) is a specification/standard for ORM in Java. Hibernate is a vendor implementation of the JPA specification. While Hibernate provides its own native APIs (Session, SessionFactory), it fully implements JPA APIs (EntityManager, EntityManagerFactory).
+
+2. Explain the core interfaces/classes in Hibernate Architecture.
+   Configuration: Used to configure Hibernate, read mapping files (hibernate.cfg.xml), and bootstrap the SessionFactory.
+
+SessionFactory: A heavy, thread-safe, immutable factory object that creates Session instances. Usually created once per application lifecycle.
+
+Session: A lightweight, non-thread-safe object representing a single-threaded unit of work with the database (analogous to a JPA EntityManager).
+
+Transaction: Encapsulates atomic units of work, keeping database operations transactional.
+
+Query / Criteria: Used to write database queries using HQL (Hibernate Query Language) or Criteria API.
+
+3. What are the states of a Persistent Entity (Entity Lifecycle)?
+   An entity instance can be in one of four states within the Hibernate Persistence Context:
+
+Transient: Newly created with new, not associated with any Session, and has no representation in the database (no identifier).
+
+Persistent: Associated with an active Session and has a database identifier. Any changes made to it are automatically tracked and synchronized to the database upon flushing/committing.
+
+Detached: The Session that created/loaded the entity has been closed. The object still exists and has a database ID, but changes are not automatically synced to the database.
+
+Removed: The entity has been marked for deletion via session.remove() (or session.delete()) and will be deleted when the transaction commits or flush occurs.
+
+Quick Index: Core Architecture & Lifecycle Questions (Q4 – Q20)
+Q4: What is the difference between getCurrentSession() and openSession()?
+
+Q5: What is the Hibernate Persistence Context (First-Level Cache)?
+
+Q6: Explain Dirty Checking in Hibernate. How does it work?
+
+Q7: What is the role of flush() in Hibernate? When does flushing occur?
+
+Q8: How does EntityManager map to Hibernate's Session?
+
+Q9: What is metamodel in Hibernate/JPA and why is it used?
+
+Q10: How does Hibernate bootstrap in modern Spring Boot applications?
+
+Q11–Q20: Covering configuration properties, connection pooling, interceptors, event listeners, and custom dialects.
+
+Category 2: Methods, Mappings & Associations (Q21 – Q40)
+21. What is the difference between save(), persist(), saveOrUpdate(), and merge()?
+    persist(entity): JPA standard method. Makes a transient instance persistent. It returns void and guarantees that the entity will be assigned an identifier when executed inside a transaction.
+
+save(entity): Hibernate-specific. Saves a transient instance, returning the generated identifier immediately (even outside a transaction in some configurations).
+
+merge(entity): Copies the state of the given detached object onto the persistent entity with the same identifier, or creates a new persistent instance if none exists, returning the managed instance.
+
+update(entity): Hibernate-specific. Re-attaches a detached instance to the current session (throws an exception if another persistent instance with the same identifier is already associated).
+
+22. What is the difference between get() and load()?
+    Feature	get()	load()
+    Database Hit	Hits the database immediately.	Returns a proxy object immediately without hitting DB (lazy loading).
+    If Record Not Found	Returns null.	Throws an EntityNotFoundException (or ObjectNotFoundException) when the proxy is accessed.
+    Use Case	When you are unsure if the record exists.	When you are sure the record exists and want to optimize performance (e.g., establishing foreign key relations).
+23. Explain fetching strategies: Eager vs. Lazy Loading.
+    Eager Loading (FetchType.EAGER): Associated entities/collections are fetched immediately along with the parent entity using a SQL JOIN. Can lead to performance degradation or massive queries (Cartesian product problem).
+
+Lazy Loading (FetchType.LAZY): Associated entities are loaded on-demand when the getter method is explicitly invoked, using proxy objects. This is the default for @OneToMany and @ManyToMany.
+
+Quick Index: Mappings & Associations Questions (Q24 – Q40)
+Q24: Explain @OneToOne, @OneToMany, @ManyToOne, and @ManyToMany annotations.
+
+Q25: What is the difference between unidirectional and bidirectional associations?
+
+Q26: What is the purpose of mappedBy in bidirectional relationships? Where should it be placed?
+
+Q27: What is an Entity Graph (@NamedEntityGraph) and how does it solve N+1 query problems?
+
+Q28: How do you map composite primary keys using @EmbeddedId vs @IdClass?
+
+Q29: What is @MapsId and when is it used?
+
+Q30–Q40: Inheritance mapping strategies (Single Table, Joined, Table per Class), orphan removal, cascade types (CascadeType.ALL, PERSIST, REMOVE), and @ElementCollection.
+
+Category 3: HQL, JPQL, Criteria API & Performance (Q41 – Q70)
+41. What is the N+1 Select Problem and how do you solve it?
+    The N+1 select problem occurs when an application executes 1 query to fetch a parent list of
+    N entities, and then executes
+    N additional queries to fetch the child collections or associations for each parent.
+
+Solutions:
+
+Fetch Join: Use JOIN FETCH in HQL/JPQL (e.g., SELECT p FROM Post p JOIN FETCH p.comments).
+
+Entity Graphs: Use @EntityGraph in Spring Data JPA.
+
+Batch Fetching: Configure @BatchSize(size = 20) on collections to fetch child records in batches rather than individually.
+
+42. Compare HQL, JPQL, Criteria API, and Native SQL.
+    JPQL: Standardized JPA query language operating on entity objects, not database tables.
+
+HQL: Hibernate's extension of JPQL, supporting extra features like explicit joins, pagination, and dynamic queries.
+
+Criteria API: Type-safe, programmatic way to build queries dynamically in Java using code expressions (ideal for search filters with dynamic parameters).
+
+Native SQL: Direct SQL execution for database-specific functions or extreme query optimization.
+
+Quick Index: Query & Performance Questions (Q43 – Q70)
+Q43: How do you implement pagination in HQL and Criteria queries? (setFirstResult(), setMaxResults())
+
+Q44: What are named queries (@NamedQuery)?
+
+Q45: What is query parameter binding and why is it mandatory to prevent SQL injection?
+
+Q46: What are DTO Projections (SELECT new com.dto.UserDTO(...)) in JPQL?
+
+Q47–Q70: Covering bulk updates/deletes, criteria builders, stored procedures, second-level cache query caching, and stateless sessions (StatelessSession).
+
+Category 4: Caching & Concurrency (Q71 – Q85)
+71. Explain the First-Level and Second-Level Caches in Hibernate.
+    First-Level Cache (L1): Associated with the Session (EntityManager) object. It is enabled by default and cannot be disabled. Objects loaded within a session are stored here; subsequent requests for the same ID within the same session return the cached instance without hitting the database.
+
+Second-Level Cache (L2): Associated with the SessionFactory. It is optional and shared across multiple sessions/users. It reduces database trips for read-heavy reference data. Common providers include Ehcache, Infinispan, and Redis.
+
+72. What are the caching concurrency strategies in Hibernate?
+    READ_ONLY: For data that never changes (throws an exception if modification is attempted).
+
+READ_WRITE: Maintains consistency by locking cached items when updated. Suitable for data read often but updated infrequently.
+
+NONSTRICT_READ_WRITE: Does not guarantee strict consistency; updates invalidate the cache. Good when stale data is acceptable for short windows.
+
+TRANSACTIONAL: Fully JTA-compliant cache management for JTA environments.
+
+73. Explain Optimistic vs. Pessimistic Locking.
+    Optimistic Locking: Assumes conflicts are rare. Uses a version column (@Version) or timestamp. When updating, Hibernate checks if the version in the DB matches the version read; if another transaction modified it, an OptimisticLockException is thrown.
+
+Pessimistic Locking: Assumes conflicts are frequent. Locks database rows explicitly using database locking mechanisms (PessimisticRead, PessimisticWrite) via LockModeType, preventing other transactions from reading/writing until the lock is released.
+
+Quick Index: Concurrency & Caching Questions (Q74 – Q85)
+Q74: How do you configure a Second-Level Cache in Hibernate?
+
+Q75: What is Query Cache and how does it differ from L2 Cache?
+
+Q76–Q85: Handling stale state, detached entity merging collisions, concurrency bottlenecks, transaction isolation levels, and ACID properties in ORM contexts.
+
+Category 5: Best Practices, Troubleshooting & Advanced Topics (Q86 – Q100)
+86. How do you handle lazy loading exceptions (LazyInitializationException)?
+    A LazyInitializationException occurs when code attempts to access a lazy-loaded collection or association after the Hibernate Session has been closed (common in web controllers or asynchronous threads).
+
+Solutions:
+
+Open Session in View (OSIV) pattern (though often discouraged for microservices).
+
+DTO Projections / JPQL Joins: Fetch all required data upfront within the transactional service layer.
+
+Hibernate.initialize(entity.getAssociation()): Explicitly initialize proxies while the session is still open.
+
+87. What are the best practices for designing entities in Hibernate?
+    Always override equals() and hashCode() using natural business keys or unique IDs rather than generated database IDs.
+
+Avoid making all associations EAGER. Default to LAZY.
+
+Implement @Version for optimistic concurrency control on mutable entities.
+
+Use stateless sessions (StatelessSession) for bulk data loading/processing to bypass persistence context overhead.
+
+Keep entity classes clean; avoid placing heavy business logic inside domain entities.
+
+Quick Index: Advanced & Best Practice Questions (Q88 – Q100)
+Q88: How do you map JSON/JSONB columns in MySQL or PostgreSQL using Hibernate?
+
+Q89: What is @DynamicUpdate and @DynamicInsert, and when should you use them?
+
+Q90: How do you audit database changes automatically using Hibernate Envers?
+
+Q91–Q100: Covering soft deletes (@SQLDelete), UUID generation strategies (@UuidGenerator), multi-tenancy architectures, bytecode enhancement, tuning batch sizes (hibernate.jdbc.batch_size), and migrating from legacy .hbm.xml to JPA annotations.
