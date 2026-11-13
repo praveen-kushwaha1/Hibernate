@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.ehcache.org/v3"
+        xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.3.xsd">
+
+    <!-- Default Cache Template -->
+    <cache-template name="default-cache">
+        <expiry>
+            <tti unit="minutes">10</tti>
+        </expiry>
+        <heap unit="entries">2000</heap>
+    </cache-template>
+
+    <!-- Specific region for your Employee entity -->
+    <cache alias="com.hibernate.p13_caching.second_level.entity.Employee" uses-template="default-cache"/>
+
+</config>
